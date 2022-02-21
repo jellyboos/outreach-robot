@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -25,14 +26,19 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Servo channel:  Servo to open left claw:  "left_hand"
  * Servo channel:  Servo to open right claw: "right_hand"
  */
-public class HardwarePushbot {
+class HardwarePushbot {
     /* Public OpMode members. */
 
     public DcMotorEx leftFront = null;
     public DcMotorEx rightFront = null;
     public DcMotorEx leftBack = null;
     public DcMotorEx rightBack = null;
+    public CRServo carousel = null;
     BNO055IMU imu = null;
+
+    public static final double CAROUSEL_LEFT_POSITION = 0.5;
+    public static final double CAROUSEL_RIGHT_POSITION = -0.5;
+    public static final double CAROUSEL_STOP = 0;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -48,11 +54,14 @@ public class HardwarePushbot {
         // Save reference to Hardware map
         hwMap = ahwMap;
 
+
         // Define and Initialize Motors
         leftFront = hwMap.get(DcMotorEx.class, "LF");
         rightFront = hwMap.get(DcMotorEx.class, "RF");
         leftBack = hwMap.get(DcMotorEx.class, "LB");
         rightBack = hwMap.get(DcMotorEx.class, "RB");
+
+        carousel = hwMap.get(CRServo.class, "carousel");
         imu = hwMap.get(BNO055IMU.class, "imu");
 
 
@@ -71,7 +80,7 @@ public class HardwarePushbot {
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-  
+
     }
     public void setMotorPowers(double p){
         setMotorPowers(p,p,p,p);
@@ -82,5 +91,5 @@ public class HardwarePushbot {
         leftBack.setPower(lB);
         rightBack.setPower(rB);
         rightFront.setPower(rF);
-  }
- }
+    }
+}
