@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 
@@ -22,28 +23,20 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="teleliv2", group="Pushbot")
-public class TELEOP extends LinearOpMode {
+public class teleop extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwarePushbot robot           = new HardwarePushbot();   // Use a Pushbot's hardware
-    private boolean maskMoveUp = false;
-    private boolean maskMoveDown = false;
-    final double BUCKET_SPEED = 0.6;
 
     @Override
     public void runOpMode() {
-
-        //checking teleop distance if encoders convert to inches correctly
-        final double COUNTS_PER_MOTOR_REV = 435;    // eg: TETRIX Motor Encoder
-        final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
-        final double WHEEL_DIAMETER_INCHES = 3.93701;     // For figuring circumference
-        final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                (WHEEL_DIAMETER_INCHES * 3.1415);
 
         double left;
         double right;
         double max;
         double speedControl;
+
+
 
         /* Initialize the hardware variables.
          * The init() method of the hardware class does all the work here
@@ -53,20 +46,19 @@ public class TELEOP extends LinearOpMode {
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
 
+        DcMotor LF = hardwareMap.dcMotor.get("LF");
+        DcMotor RF = hardwareMap.dcMotor.get("RF");
+        DcMotor LB = hardwareMap.dcMotor.get("LB");
+        DcMotor RB = hardwareMap.dcMotor.get("RB");
+
+        RF.setDirection(DcMotorSimple.Direction.REVERSE);
+        RB.setDirection(DcMotorSimple.Direction.REVERSE);
+
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
         while (opModeIsActive()) {
-
-            if(gamepad1.left_bumper){
-                speedControl = 0.3;
-            }
-            else if(gamepad1.right_bumper){
-                speedControl = 0.5;
-            }
-            else{
-                speedControl = 1;
-            }
 
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
@@ -84,30 +76,23 @@ public class TELEOP extends LinearOpMode {
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
 
-            robot.leftFront.setPower(frontLeftPower * speedControl);
-            robot.leftBack.setPower(backLeftPower * speedControl);
-            robot.rightFront.setPower(frontRightPower * speedControl);
-            robot.rightBack.setPower(backRightPower * speedControl);
-
+            robot.leftFront.setPower(frontLeftPower * 0.5);
+            robot.leftBack.setPower(backLeftPower * 0.5);
+            robot.rightFront.setPower(frontRightPower * 0.5);
+            robot.rightBack.setPower(backRightPower * 0.5);
 
             if (gamepad1.dpad_left)
-                robot.carousel.setPower(robot.CAROUSEL_POWER_LEFT);
-            else if (gamepad1.dpad_right)
-                robot.carousel.setPower(robot.CAROUSEL_POWER_RIGHT);
-            else
-                robot.carousel.setPower(0.0);
+                robot.carousel.setPower(0.5);
+            else if(gamepad1.dpad_right)
+                robot.carousel.setPower(-0.5);
+            else if(gamepad1.dpad_up || gamepad1.dpad_down)
+                robot.carousel.setPower(0);
 
-           
 
             telemetry.addData("LF Encoder", robot.leftFront.getCurrentPosition());
             telemetry.addData("LB Encoder", robot.leftBack.getCurrentPosition());
             telemetry.addData("RF Encoder", robot.rightFront.getCurrentPosition());
             telemetry.addData("RB Encoder", robot.rightBack.getCurrentPosition());
-            telemetry.addData("LF Inches", robot.leftFront.getCurrentPosition()/COUNTS_PER_INCH);
-            telemetry.addData("LB Inches", robot.leftBack.getCurrentPosition()/COUNTS_PER_INCH);
-            telemetry.addData("RF Inches", robot.rightFront.getCurrentPosition()/COUNTS_PER_INCH);
-            telemetry.addData("RB Inches", robot.rightBack.getCurrentPosition()/COUNTS_PER_INCH);
-            telemetry.addData("power:", robot.intake);
             telemetry.update();
 
             // Pace this loop so jaw action is reasonable speed.
